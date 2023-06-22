@@ -1,5 +1,8 @@
 version: "3"
 
+networks:
+  my-network:
+    driver: bridge
 services:
 
   fluentd: 
@@ -9,12 +12,15 @@ services:
     depends_on:
       - elasticsearch
     ports: 
-      - 24224:24224
-      - 24224:24224/udp
+      - "24224:24224"
+    networks:
+      - my-network      
   elasticsearch:
     image: elasticsearch:7.17.0
-    expose: 
-      - 9200
+    ports: 
+      - "9200:9200"
+    networks:
+      - my-network      
     environment:
       - discovery.type=single-node 
     volumes: 
@@ -26,8 +32,11 @@ services:
     depends_on:
       - elasticsearch
     ports: 
-      - 5601:5601
-    environment: 
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_URL=elasticsearch:9200
+        ELASTICSEARCH_HOSTS=elasticsearch:9200
+    networks:
+      - my-network      
 volumes:
   esdata:
