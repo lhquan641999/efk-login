@@ -1,0 +1,48 @@
+# https://github.com/fluent/helm-charts/blob/main/charts/fluentd/values.yaml
+fileConfigs:
+  04_outputs.conf: |
+    <label @OUTPUT>
+      <match **>
+        @type elasticsearch
+        schema http
+        #scheme https
+        host elasticsearch:9200
+        #port 443
+        #user aggregator
+        #password Cjd5Z1@VQJkdI!M2
+        logstash_format true
+        logstash_prefix ${$.kubernetes.namespace_name}.kubernetesclusterv2  # use $$ instead of $ to avoid interpolation by Terraform templatefile()
+        logstash_dateformat %Y
+        reload_connections false
+        reconnect_on_error true
+        reload_on_failure true
+        compression_level best_compression
+        with_transporter_log true                                        # for debug
+        log_es_400_reason true                                           # for debug
+        <buffer $.kubernetes.namespace_name>
+           @type file
+           path /var/log/fluentd-buffers/kubernetes.system.buffer
+           flush_at_shutdown true
+           flush_mode interval
+           retry_type exponential_backoff
+           flush_thread_count 2
+           flush_interval 15s
+           retry_forever true
+           retry_max_interval 180s
+           chunk_limit_size 8M
+           total_limit_size 8G
+           chunk_limit_records 10000
+           overflow_action block
+       </buffer>
+      </match>
+    </label>
+
+
+# removed since K8s 1.25
+podSecurityPolicy:
+  enabled: false
+  annotations: {}
+
+metrics:
+  serviceMonitor:
+    enabled: true

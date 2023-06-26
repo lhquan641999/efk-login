@@ -1,42 +1,22 @@
 version: "3"
-
 networks:
   my-network:
     driver: bridge
 services:
-
   fluentd: 
-    build: ./fluentd
-    links: 
-      - elasticsearch
-    depends_on:
-      - elasticsearch
-    ports: 
-      - "24224:24224"
-    networks:
-      - my-network      
-  elasticsearch:
-    image: elasticsearch:7.17.0
-    ports: 
-      - "9200:9200"
-    networks:
-      - my-network      
+    build: .
+    volumes:
+      - ./:/fluentd/etc/
+    network_mode: 'host' 
+  coupon-pf:
+    image: 341433527940.dkr.ecr.ap-northeast-1.amazonaws.com/coupon-pf:1378
     environment:
-      - discovery.type=single-node 
-    volumes: 
-      - esdata:/usr/share/elasticsearch/data
-  kibana:
-    image: kibana:7.17.0
-    links: 
-      - elasticsearch
+      NODE_ENV: development   
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: coupon.log       
+    network_mode: 'host'   
     depends_on:
-      - elasticsearch
-    ports: 
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_URL=elasticsearch:9200
-        ELASTICSEARCH_HOSTS=elasticsearch:9200
-    networks:
-      - my-network      
-volumes:
-  esdata:
+      - fluentd
