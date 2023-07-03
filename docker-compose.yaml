@@ -9,7 +9,7 @@ services:
       - ./:/fluentd/etc/
     network_mode: 'host' 
   coupon-pf:
-    image: 341433527940.dkr.ecr.ap-northeast-1.amazonaws.com/coupon-pf:1378
+    image: image-name-have loging to tag
     environment:
       NODE_ENV: development   
     logging:
